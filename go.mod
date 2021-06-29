@@ -1,3 +1,3 @@
-module jc/async-hasher
+module jc
 
 go 1.15

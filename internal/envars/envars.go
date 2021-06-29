@@ -1,4 +1,4 @@
-package main
+package envars
 
 import (
 	"bufio"
@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func setEnvFromFile(path string) {
+func SetFromFile(path string) {
 	file, e := os.Open(path)
 
 	if e != nil {
@@ -26,7 +26,7 @@ func setEnvFromFile(path string) {
 	file.Close()
 }
 
-func getEnv(key string) string {
+func GetKey(key string) string {
 	value := os.Getenv(key)
 
 	if value == "" {
