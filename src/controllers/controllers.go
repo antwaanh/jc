@@ -3,8 +3,8 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"jc/internal/services/dao"
-	"jc/internal/services/queue"
+	"jc/src/services/dao"
+	"jc/src/services/queue"
 	"log"
 	"net/http"
 	"regexp"
