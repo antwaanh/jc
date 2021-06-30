@@ -3,6 +3,7 @@ package dao
 import (
 	"crypto/sha512"
 	"encoding/base64"
+	"jc/src/services/config"
 	"sync"
 	"time"
 )
@@ -28,12 +29,12 @@ func UpdatePassword(id int, pw string, resource *sync.Mutex) {
 }
 
 func HashAndUpdatePassword(id int, pw string, resource *sync.Mutex) {
+	hashInterval, _ := time.ParseDuration(config.GetEnv("HASH_INTERVAL"))
 	StorePassword(id, "", resource)
 
-	timer := time.NewTimer(5 * time.Second)
+	timer := time.NewTimer(hashInterval * time.Second)
 	<-timer.C
 	hash := sha512.Sum512([]byte(pw))
 
 	UpdatePassword(id, base64.URLEncoding.EncodeToString(hash[:]), resource)
 }
-

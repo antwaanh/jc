@@ -11,7 +11,7 @@ var RequestTime time.Time
 var ShutdownSig bool
 
 type ServerStats struct {
-	Total int64
+	Total   int64
 	Average int64
 }
 
@@ -26,8 +26,3 @@ func UpdateStats(resource *sync.Mutex, wg *sync.WaitGroup) {
 func GetStats() ServerStats {
 	return ServerStats{Total, Avg}
 }
-
-
-
-
-

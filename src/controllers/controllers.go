@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"jc/src/services/dao"
 	"jc/src/services/server"
-	"jc/src/services/server-statistics"
+	stats "jc/src/services/server-statistics"
 	"log"
 	"net/http"
 	"regexp"
@@ -18,6 +18,7 @@ type Stats struct {
 	Total   int `json:"total"`
 	Average int `json:"average"`
 }
+
 var resource sync.Mutex
 
 func PostHash(res http.ResponseWriter, req *http.Request) {
@@ -41,7 +42,7 @@ func PostHash(res http.ResponseWriter, req *http.Request) {
 
 	stats.RequestTime = time.Now()
 	var wg sync.WaitGroup
-	wg.Add(1)
+	wg.Add(2)
 	go dao.HashAndUpdatePassword(entry.Id, entry.Value, &resource)
 	go stats.UpdateStats(&resource, &wg)
 	wg.Wait()

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"jc/src/services/config"
 	"log"
 	"net/http"
@@ -13,12 +14,12 @@ func StartUp() {
 	config.SetEnvFromFile(".env")
 	host := config.GetEnv("HOST")
 	port := config.GetEnv("PORT")
-	Instance = http.Server{Addr: ":"+port}
+	Instance = http.Server{Addr: ":" + port}
 	log.Printf("Starting server at %v:%v", host, port)
 }
 
 func Shutdown() {
 	time.Sleep(2 * time.Second)
-	e := Instance.Shutdown(nil)
+	e := Instance.Shutdown(context.TODO())
 	log.Println(e)
 }

@@ -3,7 +3,7 @@ package main
 import (
 	"jc/src/controllers"
 	"jc/src/services/server"
-	"jc/src/services/server-statistics"
+	stats "jc/src/services/server-statistics"
 	"log"
 	"net/http"
 )
