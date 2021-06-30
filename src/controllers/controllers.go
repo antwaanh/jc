@@ -42,7 +42,7 @@ func PostHash(res http.ResponseWriter, req *http.Request) {
 
 	stats.RequestTime = time.Now()
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(1)
 	go dao.HashAndUpdatePassword(entry.Id, entry.Value, &resource)
 	go stats.UpdateStats(&resource, &wg)
 	wg.Wait()

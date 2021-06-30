@@ -18,11 +18,11 @@ type ServerStats struct {
 func UpdateStats(resource *sync.Mutex, wg *sync.WaitGroup) {
 	resource.Lock()
 	Total += 1
-	Avg = Avg + time.Since(RequestTime).Microseconds()
+	Avg += time.Since(RequestTime).Microseconds()
 	resource.Unlock()
 	wg.Done()
 }
 
 func GetStats() ServerStats {
-	return ServerStats{Total, Avg}
+	return ServerStats{Total, (Avg / Total) * int64(time.Microsecond)}
 }
