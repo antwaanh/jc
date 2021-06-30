@@ -16,4 +16,7 @@ Write an HTTP server that listens on a given port. Your server should be able to
 2. `cd jc`
 3. `go run jc` 
 
+> Note: Configuration values can be updated via the .env file. 
+> If any need to be changed be sure the rebuild using `go build jc`
+
 
