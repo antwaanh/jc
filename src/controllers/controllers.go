@@ -2,13 +2,15 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"jc/src/services/dao"
+	"jc/src/services/server-statistics"
 	"log"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 )
 
 type Stats struct {
@@ -31,7 +33,11 @@ func PostHash(res http.ResponseWriter, req *http.Request) {
 
 	go dao.HashAndUpdatePassword(entry.Id, entry.Value)
 
-	fmt.Println("DB", dao.Instance)
+	stats.RequestTime = time.Now()
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go stats.UpdateStats(&wg)
+	wg.Wait()
 
 	res.Write([]byte(strconv.Itoa(entry.Id)))
 }
@@ -69,10 +75,7 @@ func GetStats(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	total := len(dao.Instance)
-	avg := total / 5
-	s := Stats{Total: total, Average: avg}
-	j, e := json.Marshal(s)
+	j, e := json.Marshal(stats.GetStats())
 
 	if e != nil {
 		log.Println(e)
