@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"jc/src/services/dao"
+	"jc/src/services/server"
 	"jc/src/services/server-statistics"
 	"log"
 	"net/http"
@@ -17,10 +18,17 @@ type Stats struct {
 	Total   int `json:"total"`
 	Average int `json:"average"`
 }
+var resource sync.Mutex
 
 func PostHash(res http.ResponseWriter, req *http.Request) {
-	if req.URL.Path != "/hash/" && req.Method != "POST" {
+	if req.URL.Path != "/hash/" && req.Method != http.MethodPost {
 		http.NotFound(res, req)
+		return
+	}
+
+	if stats.ShutdownSig == true {
+		res.WriteHeader(http.StatusOK)
+		res.Write([]byte("Shutdown signal sent"))
 		return
 	}
 
@@ -31,12 +39,11 @@ func PostHash(res http.ResponseWriter, req *http.Request) {
 		Value: pw,
 	}
 
-	go dao.HashAndUpdatePassword(entry.Id, entry.Value)
-
 	stats.RequestTime = time.Now()
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go stats.UpdateStats(&wg)
+	go dao.HashAndUpdatePassword(entry.Id, entry.Value, &resource)
+	go stats.UpdateStats(&resource, &wg)
 	wg.Wait()
 
 	res.Write([]byte(strconv.Itoa(entry.Id)))
@@ -46,7 +53,7 @@ func GetHashById(res http.ResponseWriter, req *http.Request) {
 	path := req.URL.Path
 	test, _ := regexp.MatchString("/hash/[0-9]/", path)
 
-	if !test && req.Method != "GET" {
+	if !test && req.Method != http.MethodGet {
 		http.NotFound(res, req)
 		return
 	}
@@ -70,7 +77,7 @@ func GetHashById(res http.ResponseWriter, req *http.Request) {
 }
 
 func GetStats(res http.ResponseWriter, req *http.Request) {
-	if req.URL.Path != "/stats/" && req.Method != "GET" {
+	if req.URL.Path != "/stats/" && req.Method != http.MethodGet {
 		http.NotFound(res, req)
 		return
 	}
@@ -85,10 +92,23 @@ func GetStats(res http.ResponseWriter, req *http.Request) {
 }
 
 func PostShutdown(res http.ResponseWriter, req *http.Request) {
-	if req.URL.Path != "/shutdown/" && req.Method != "POST" {
+	if req.URL.Path != "/shutdown/" && req.Method != http.MethodPost {
 		http.NotFound(res, req)
 		return
 	}
 
-	res.Write([]byte("{message: 'shutdown signal sent'}"))
+	// Set Signal to prevent new POST requests
+	for {
+		time.Sleep(1 * time.Second)
+
+		if stats.GetStats().Total == int64(len(dao.Instance)) {
+			stats.ShutdownSig = true
+			break
+		}
+	}
+
+	go server.Shutdown()
+
+	res.WriteHeader(200)
+	res.Write([]byte("shutdown signal sent"))
 }

@@ -2,25 +2,26 @@ package main
 
 import (
 	"jc/src/controllers"
-	"jc/src/services/config"
+	"jc/src/services/server"
 	"jc/src/services/server-statistics"
 	"log"
 	"net/http"
 )
 
 func main() {
-	config.SetEnvFromFile(".env")
 	stats.Total = 0
 	stats.Avg = 0
+	stats.ShutdownSig = false
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/hash", controllers.PostHash)
-	mux.HandleFunc("/hash/", controllers.GetHashById)
-	mux.HandleFunc("/stats", controllers.GetStats)
-	mux.HandleFunc("/shutdown", controllers.PostShutdown)
+	server.StartUp()
+	http.HandleFunc("/hash", controllers.PostHash)
+	http.HandleFunc("/hash/", controllers.GetHashById)
+	http.HandleFunc("/stats", controllers.GetStats)
+	http.HandleFunc("/shutdown", controllers.PostShutdown)
 
-	e := http.ListenAndServe(":"+config.GetEnv("PORT"), mux)
+	e := server.Instance.ListenAndServe()
 	if e != nil {
 		log.Fatal(e)
 	}
+
 }

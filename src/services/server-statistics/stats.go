@@ -8,17 +8,16 @@ import (
 var Total int64
 var Avg int64
 var RequestTime time.Time
-var resource sync.Mutex
+var ShutdownSig bool
 
 type ServerStats struct {
 	Total int64
 	Average int64
 }
 
-func UpdateStats(wg *sync.WaitGroup) {
+func UpdateStats(resource *sync.Mutex, wg *sync.WaitGroup) {
 	resource.Lock()
 	Total += 1
-
 	Avg = Avg + time.Since(RequestTime).Microseconds()
 	resource.Unlock()
 	wg.Done()
